@@ -24,6 +24,83 @@ const _done = Symbol('done');
 const _items = Symbol('items');
 const _includes = Symbol('includes');
 
+const ACTIVITY_TYPES = [
+  as.Activity,
+  as.IntransitiveActivity,
+  as.Accept,
+  as.Add,
+  as.Announce,
+  as.Arrive,
+  as.Block,
+  as.Create,
+  as.Delete,
+  as.Dislike,
+  as.Flag,
+  as.Follow,
+  as.Ignore,
+  as.Invite,
+  as.Join,
+  as.Leave,
+  as.Like,
+  as.Listen,
+  as.Move,
+  as.Offer,
+  as.Question,
+  as.Reject,
+  as.Read,
+  as.Remove,
+  as.TentativeReject,
+  as.TentativeAccept,
+  as.Travel,
+  as.Undo,
+  as.Update,
+  as.View
+]
+
+const ACTOR_TYPES = [
+  as.Application,
+  as.Group,
+  as.Organization,
+  as.Person,
+  as.Service
+]
+
+const OBJECT_TYPES = [
+  as.Article,
+  as.Audio,
+  as.Document,
+  as.Event,
+  as.Image,
+  as.Note,
+  as.Page,
+  as.Place,
+  as.Profile,
+  as.Relationship,
+  as.Tombstone,
+  as.Video
+]
+
+const LINK_TYPES = [
+  as.Link,
+  as.Mention
+]
+
+const COLLECTION_TYPES = [
+  as.Collection,
+  as.CollectionPage,
+  as.OrderedCollection,
+  as.OrderedCollectionPage
+]
+
+const ACTIVITY_PROPS = [
+  as.actor,
+  as.object,
+  as.target,
+  as.result,
+  as.origin,
+  as.instrument
+]
+
 function is_literal(item) {
   return item && Object.hasOwn(item, '@value');
 }
@@ -299,6 +376,27 @@ class Base {
       models.compose_base(bld[_base], type);
       return bld;
     };
+  }
+
+  isActivity() {
+    const types = this[_expanded]['@type'];
+
+    // Known activity types
+    if (types.some(t => ACTIVITY_TYPES.includes(t))) {
+      return true
+    }
+    // Known non-activity types
+    for (const nonActivityTypes in [ACTOR_TYPES, OBJECT_TYPES, LINK_TYPES, COLLECTION_TYPES]) {
+      if (types.some(t => nonActivityTypes.includes(t))) {
+        return false
+      }
+    }
+    // Duck type
+    if (ACTIVITY_PROPS.some(p => this.has(p))) {
+      return true
+    }
+    // We tried bud ¯\_(ツ)_/¯
+    return false
   }
 
   * [Symbol.iterator]() {
